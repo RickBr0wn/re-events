@@ -8,16 +8,16 @@ import EventDetailedInfo from './EventDetailedInfo'
 import EventDetailedChat from './EventDetailedChat'
 import EventDetailedSidebar from './EventDetailedSidebar'
 import { objectToArray } from '../../../app/common/util/helpers'
+import { auth } from 'firebase'
 
 const mapState = state => {
   let event = {}
-
   if (state.firestore.ordered.events && state.firestore.ordered.events[0]) {
     event = state.firestore.ordered.events[0]
   }
-
   return {
-    event
+    event,
+    auth: state.firebase.auth
   }
 }
 
@@ -32,12 +32,18 @@ class EventDetailedPage extends Component {
   }
 
   render() {
-    const { event } = this.props
+    const { event, auth } = this.props
     const attendees = event && event.attendees && objectToArray(event.attendees)
+    const isHost = event.hostUid === auth.id
+    const isGoing = attendees && attendees.some(a => a.id === auth.id)
     return (
       <Grid>
         <Grid.Column width={10}>
-          <EventDetailedHeader event={event} />
+          <EventDetailedHeader
+            event={event}
+            isHost={isHost}
+            isGoing={isGoing}
+          />
           <EventDetailedInfo event={event} />
           <EventDetailedChat />
         </Grid.Column>
